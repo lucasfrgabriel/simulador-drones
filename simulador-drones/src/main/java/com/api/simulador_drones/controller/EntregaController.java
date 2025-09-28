@@ -25,4 +25,9 @@ public class EntregaController {
         Entrega entregaIniciada = entregaService.iniciarEntrega(id);
         return ResponseEntity.ok().body(entregaIniciada);
     }
+    @PostMapping("/{id}/finalizar")
+    public ResponseEntity<Entrega> finalizarEntrega(@PathVariable Long id) {
+        Entrega entregaFinalizada = entregaService.finalizarEntrega(id);
+        return ResponseEntity.ok().body(entregaFinalizada);
+    }
 }

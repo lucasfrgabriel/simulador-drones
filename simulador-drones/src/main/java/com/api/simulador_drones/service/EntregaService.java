@@ -60,4 +60,24 @@ public class EntregaService {
         droneRepository.save(drone);
         return entregaRepository.save(entrega);
     }
+
+    @Transactional
+    public Entrega finalizarEntrega(Long id) {
+        Entrega entrega = findById(id);
+
+        if (entrega.getStatus() != EntregaStatus.EM_CURSO) {
+            throw new IllegalStateException("A entrega não está 'EM_CURSO', por isso não pode ser finalizada.");
+        }
+
+        entrega.setStatus(EntregaStatus.FINALIZADA);
+        entrega.setFimEntrega(LocalDateTime.now());
+
+        entrega.getPedidosEntrega().forEach(pedido -> pedido.setPedidoStatus(PedidoStatus.ENTREGUE));
+
+        Drone drone = entrega.getDroneAssociado();
+        drone.setStatus(DroneStatus.RETORNANDO);
+
+        droneRepository.save(drone);
+        return entregaRepository.save(entrega);
+    }
 }
