@@ -27,6 +27,7 @@ public class Drone implements Serializable {
     private double autonomiaMaximaKm;
     private double bateriaAtual = 100.00;
 
+    @Setter
     @Enumerated(EnumType.STRING)
     private DroneStatus status = DroneStatus.IDLE;
 

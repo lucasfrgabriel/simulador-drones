@@ -9,6 +9,7 @@ import lombok.*;
 import java.io.Serial;
 import java.io.Serializable;
 
+@Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -38,4 +39,11 @@ public class Pedido implements Serializable {
     @ManyToOne
     @JoinColumn(name = "entrega_id")
     private Entrega entrega;
+
+    public Pedido(double pesoKg, Prioridade prioridade, int posX, int posY) {
+        this.pesoKg = pesoKg;
+        this.prioridade = prioridade;
+        this.posX = posX;
+        this.posY = posY;
+    }
 }
