@@ -1,14 +1,20 @@
 package com.api.simulador_drones.service;
 
+import com.api.simulador_drones.domain.Drone;
 import com.api.simulador_drones.domain.Entrega;
 
+import com.api.simulador_drones.domain.enums.DroneStatus;
+import com.api.simulador_drones.domain.enums.EntregaStatus;
+import com.api.simulador_drones.domain.enums.PedidoStatus;
 import com.api.simulador_drones.dto.EntregaDTO;
 import com.api.simulador_drones.repository.DroneRepository;
 import com.api.simulador_drones.repository.EntregaRepository;
 
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,5 +43,21 @@ public class EntregaService {
         boolean autonomiaOk = entrega.getDroneAssociado().getAutonomiaMaximaKm() >= distanciaTotal;
 
         return new EntregaDTO(entrega.getId(), entrega.getDroneAssociado().getId(), entrega.getPedidosEntrega(), distanciaTotal, autonomiaOk);
+    }
+
+    @Transactional
+    public Entrega iniciarEntrega(Long id) {
+        Entrega entrega = findById(id);
+
+        entrega.setStatus(EntregaStatus.EM_CURSO);
+        entrega.setInicioEntrega(LocalDateTime.now());
+
+        Drone drone = entrega.getDroneAssociado();
+        drone.setStatus(DroneStatus.EM_VOO);
+
+        entrega.getPedidosEntrega().forEach(pedido -> pedido.setPedidoStatus(PedidoStatus.A_CAMINHO));
+
+        droneRepository.save(drone);
+        return entregaRepository.save(entrega);
     }
 }

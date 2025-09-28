@@ -19,4 +19,10 @@ public class EntregaController {
         EntregaDTO rota = entregaService.calcularRota(id);
         return ResponseEntity.ok().body(rota);
     }
+
+    @PostMapping("/{id}/iniciar")
+    public ResponseEntity<Entrega> iniciarEntrega(@PathVariable Long id) {
+        Entrega entregaIniciada = entregaService.iniciarEntrega(id);
+        return ResponseEntity.ok().body(entregaIniciada);
+    }
 }

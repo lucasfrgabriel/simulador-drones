@@ -1,5 +1,6 @@
 package com.api.simulador_drones.domain;
 
+import com.api.simulador_drones.domain.enums.EntregaStatus;
 import com.api.simulador_drones.util.CalculadoraDistancia;
 import jakarta.persistence.*;
 import lombok.*;
@@ -38,6 +39,9 @@ public class Entrega implements Serializable {
 
     private double pesoTotalKg;
     private double distanciaTotalKm;
+
+    @Enumerated(EnumType.STRING)
+    private EntregaStatus status = EntregaStatus.AGUARDANDO_PACOTES;
 
     /**
      * Construtor para criar uma entrega.
