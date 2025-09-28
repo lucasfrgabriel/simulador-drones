@@ -35,6 +35,7 @@ public class Entrega implements Serializable {
     private Drone droneAssociado;
 
     @OneToMany(mappedBy = "entrega", cascade = CascadeType.ALL)
+    @OrderBy("prioridade DESC")
     private List<Pedido> pedidosEntrega = new ArrayList<>();
 
     private double pesoTotalKg;
@@ -57,6 +58,7 @@ public class Entrega implements Serializable {
      */
     public void adicionarPedido(Pedido pedido) {
         this.pedidosEntrega.add(pedido);
+        this.pedidosEntrega.sort((p1, p2) -> p2.getPrioridade().compareTo(p1.getPrioridade()));
         this.pesoTotalKg = this.pedidosEntrega.stream().mapToDouble(Pedido::getPesoKg).sum();
         this.distanciaTotalKm = CalculadoraDistancia.calcular(this.pedidosEntrega);
     }
