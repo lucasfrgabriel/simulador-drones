@@ -25,6 +25,8 @@ public class Drone implements Serializable {
 
     private double capacidadeMaximaKg;
     private double autonomiaMaximaKm;
+
+    @Setter
     private double bateriaAtual = 100.00;
 
     @Setter
@@ -33,4 +35,9 @@ public class Drone implements Serializable {
 
     private int posX = 0;
     private int posY = 0;
+
+    public Drone(double capacidadeMaximaKg, double autonomiaMaximaKm) {
+        this.capacidadeMaximaKg = capacidadeMaximaKg;
+        this.autonomiaMaximaKm = autonomiaMaximaKm;
+    }
 }

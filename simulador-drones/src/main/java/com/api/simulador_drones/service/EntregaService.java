@@ -21,6 +21,8 @@ import java.util.Optional;
 @Service
 public class EntregaService {
 
+    private static final double CONSUMO_BATERIA_POR_KM = 0.5;
+
     @Autowired
     private EntregaRepository entregaRepository;
 
@@ -53,7 +55,7 @@ public class EntregaService {
         entrega.setInicioEntrega(LocalDateTime.now());
 
         Drone drone = entrega.getDroneAssociado();
-        drone.setStatus(DroneStatus.EM_VOO);
+        drone.setStatus(drone.getStatus().avancarStatus());
 
         entrega.getPedidosEntrega().forEach(pedido -> pedido.setPedidoStatus(PedidoStatus.A_CAMINHO));
 
@@ -69,13 +71,18 @@ public class EntregaService {
             throw new IllegalStateException("A entrega não está 'EM_CURSO', por isso não pode ser finalizada.");
         }
 
+        Drone drone = entrega.getDroneAssociado();
+        double distanciaPercorrida = entrega.getDistanciaTotalKm();
+        double bateriaConsumida = distanciaPercorrida * CONSUMO_BATERIA_POR_KM;
+        double novaBateria = drone.getBateriaAtual() - bateriaConsumida;
+
+        drone.setBateriaAtual(Math.max(0, novaBateria));
+
         entrega.setStatus(EntregaStatus.FINALIZADA);
         entrega.setFimEntrega(LocalDateTime.now());
 
         entrega.getPedidosEntrega().forEach(pedido -> pedido.setPedidoStatus(PedidoStatus.ENTREGUE));
-
-        Drone drone = entrega.getDroneAssociado();
-        drone.setStatus(DroneStatus.RETORNANDO);
+        drone.setStatus(drone.getStatus().avancarStatus());
 
         droneRepository.save(drone);
         return entregaRepository.save(entrega);

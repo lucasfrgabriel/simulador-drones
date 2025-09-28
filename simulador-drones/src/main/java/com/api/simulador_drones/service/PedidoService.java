@@ -33,6 +33,7 @@ public class PedidoService {
 
         return pedidoRepository.findById(pedidoSalvo.getId()).get();
     }
+
     public List<Pedido> findAll(){
         return pedidoRepository.findAll();
     }

@@ -95,18 +95,41 @@ public class LogisticaService {
         if (droneDisponivel.isPresent()) {
             Drone droneEscolhido = droneDisponivel.get();
 
-            Entrega novaEntrega = new Entrega(droneEscolhido);
-            novaEntrega.adicionarPedido(pedido);
-
-            pedido.setEntrega(novaEntrega);
-            pedido.setPedidoStatus(PedidoStatus.ALOCADO);
-            droneEscolhido.setStatus(DroneStatus.CARREGANDO);
-
-            entregaRepository.save(novaEntrega);
-            pedidoRepository.save(pedido);
-            droneRepository.save(droneEscolhido);
-            return true;
+            return novaEntrega(pedido, droneEscolhido);
         }
         return false;
+    }
+
+    private boolean criarEntrega(Pedido pedido, Drone drone) {
+        boolean pesoOk = drone.getCapacidadeMaximaKg() >= pedido.getPesoKg();
+        if (!pesoOk) return false;
+
+        double distanciaDaRota = CalculadoraDistancia.calcular(List.of(pedido));
+        boolean autonomiaOk = drone.getAutonomiaMaximaKm() >= distanciaDaRota;
+
+        if (autonomiaOk) {
+            return novaEntrega(pedido, drone);
+        }
+        return false;
+    }
+
+    private boolean novaEntrega(Pedido pedido, Drone drone) {
+        Entrega novaEntrega = new Entrega(drone);
+        novaEntrega.adicionarPedido(pedido);
+
+        pedido.setEntrega(novaEntrega);
+        pedido.setPedidoStatus(PedidoStatus.ALOCADO);
+        drone.setStatus(drone.getStatus().avancarStatus());
+
+        entregaRepository.save(novaEntrega);
+        pedidoRepository.save(pedido);
+        droneRepository.save(drone);
+        return true;
+    }
+
+    @Transactional
+    public void alocarPedidosPendentes(Drone drone) {
+        List<Pedido> pedidosPendentes = pedidoRepository.findByPedidoStatus(PedidoStatus.PENDENTE);
+        pedidosPendentes.forEach(pedido -> criarEntrega(pedido, drone));
     }
 }

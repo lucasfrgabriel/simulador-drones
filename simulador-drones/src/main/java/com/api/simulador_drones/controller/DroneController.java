@@ -1,14 +1,16 @@
 package com.api.simulador_drones.controller;
 
 import com.api.simulador_drones.domain.Drone;
+import com.api.simulador_drones.dto.DroneDTO;
+
 import com.api.simulador_drones.service.DroneService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -28,5 +30,18 @@ public class DroneController {
     public ResponseEntity<Drone> findById(@PathVariable(value = "id") Long id){
         Drone obj = service.findById(id);
         return ResponseEntity.ok().body(obj);
+    }
+
+    @PostMapping("/{id}/retornar")
+    public ResponseEntity<Drone> retornarABase(@PathVariable Long id) {
+        Drone drone = service.retornarDroneABase(id);
+        return ResponseEntity.ok().body(drone);
+    }
+
+    @PostMapping
+    public ResponseEntity<Drone> create(@RequestBody DroneDTO droneDTO){
+        Drone novoDrone = service.create(droneDTO);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(novoDrone.getId()).toUri();
+        return ResponseEntity.created(uri).body(novoDrone);
     }
 }
