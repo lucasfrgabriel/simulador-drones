@@ -37,4 +37,22 @@ public class Entrega implements Serializable {
 
     private double pesoTotalKg;
     private double distanciaTotalKm;
+
+    /**
+     * Construtor para criar uma entrega.
+     * @param droneAssociado O drone que realizará a entrega.
+     */
+    public Entrega(Drone droneAssociado) {
+        this.droneAssociado = droneAssociado;
+        this.inicioEntrega = LocalDateTime.now(); // A entrega começa no momento da criação
+    }
+
+    /**
+     * Adiciona um pedido a entrega e recalcula o peso total.
+     * @param pedido O pedido a ser adicionado.
+     */
+    public void adicionarPedido(Pedido pedido) {
+        this.pedidosEntrega.add(pedido);
+        this.pesoTotalKg = this.pedidosEntrega.stream().mapToDouble(Pedido::getPesoKg).sum();
+    }
 }

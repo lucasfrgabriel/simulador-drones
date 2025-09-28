@@ -1,0 +1,98 @@
+package com.api.simulador_drones.service;
+
+import com.api.simulador_drones.domain.Drone;
+import com.api.simulador_drones.domain.Entrega;
+import com.api.simulador_drones.domain.Pedido;
+
+import com.api.simulador_drones.domain.enums.DroneStatus;
+import com.api.simulador_drones.domain.enums.PedidoStatus;
+
+import com.api.simulador_drones.repository.DroneRepository;
+import com.api.simulador_drones.repository.EntregaRepository;
+import com.api.simulador_drones.repository.PedidoRepository;
+
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class LogisticaService {
+    @Autowired
+    private DroneRepository droneRepository;
+
+    @Autowired
+    private PedidoRepository pedidoRepository;
+
+    @Autowired
+    private EntregaRepository entregaRepository;
+
+    @Transactional
+    public void alocarNovoPedido(Pedido pedido) {
+        boolean foiAgrupado = adicionarEntrega(pedido);
+        if (foiAgrupado) {
+            return;
+        }
+
+        boolean criouNovaEntrega = criarEntrega(pedido);
+        if (criouNovaEntrega) {
+            return;
+        }
+
+        System.err.println("Nenhuma opção de alocação encontrada para o pedido: " + pedido.getId());
+    }
+
+    private boolean adicionarEntrega(Pedido novoPedido) {
+        List<Entrega> entregasEmCarregamento = entregaRepository.findByDroneStatus(DroneStatus.CARREGANDO);
+
+        Optional<Entrega> addEntrega = entregasEmCarregamento.stream()
+                .filter(entrega -> {
+                    Drone drone = entrega.getDroneAssociado();
+                    double pesoTotalAtual = entrega.getPesoTotalKg();
+                    return drone.getCapacidadeMaximaKg() >= (pesoTotalAtual + novoPedido.getPesoKg());
+                })
+                .findFirst();
+
+        if (addEntrega.isPresent()) {
+            Entrega entrega = addEntrega.get();
+
+            entrega.adicionarPedido(novoPedido);
+            novoPedido.setEntrega(entrega);
+            novoPedido.setPedidoStatus(PedidoStatus.ALOCADO);
+
+            entregaRepository.save(entrega);
+            pedidoRepository.save(novoPedido);
+
+            return true;
+        }
+        return false;
+    }
+
+    private boolean criarEntrega(Pedido pedido) {
+        List<Drone> dronesOciosos = droneRepository.findByStatus(DroneStatus.IDLE);
+
+        Optional<Drone> droneDisponivel = dronesOciosos.stream()
+                .filter(drone -> drone.getCapacidadeMaximaKg() >= pedido.getPesoKg())
+                .findFirst();
+
+        if (droneDisponivel.isPresent()) {
+            Drone droneEscolhido = droneDisponivel.get();
+
+            Entrega novaEntrega = new Entrega(droneEscolhido);
+            novaEntrega.adicionarPedido(pedido);
+
+            pedido.setEntrega(novaEntrega);
+            pedido.setPedidoStatus(PedidoStatus.ALOCADO);
+            droneEscolhido.setStatus(DroneStatus.CARREGANDO);
+
+            entregaRepository.save(novaEntrega);
+            pedidoRepository.save(pedido);
+            droneRepository.save(droneEscolhido);
+            return true;
+        }
+        return false;
+    }
+
+}

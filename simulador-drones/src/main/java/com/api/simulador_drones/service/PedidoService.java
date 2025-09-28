@@ -29,6 +29,7 @@ public class PedidoService {
         );
 
         Pedido pedidoSalvo = pedidoRepository.save(pedido);
+        logisticaService.alocarNovoPedido(pedidoSalvo);
 
         return pedidoRepository.findById(pedidoSalvo.getId()).get();
     }
