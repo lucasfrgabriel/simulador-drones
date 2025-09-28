@@ -1,5 +1,6 @@
 package com.api.simulador_drones.domain;
 
+import com.api.simulador_drones.util.CalculadoraDistancia;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,7 +29,6 @@ public class Entrega implements Serializable {
     private LocalDateTime inicioEntrega;
     private LocalDateTime fimEntrega;
 
-    @Setter
     @ManyToOne
     @JoinColumn(name = "drone_id")
     private Drone droneAssociado;
@@ -44,7 +45,6 @@ public class Entrega implements Serializable {
      */
     public Entrega(Drone droneAssociado) {
         this.droneAssociado = droneAssociado;
-        this.inicioEntrega = LocalDateTime.now(); // A entrega começa no momento da criação
     }
 
     /**
@@ -54,5 +54,6 @@ public class Entrega implements Serializable {
     public void adicionarPedido(Pedido pedido) {
         this.pedidosEntrega.add(pedido);
         this.pesoTotalKg = this.pedidosEntrega.stream().mapToDouble(Pedido::getPesoKg).sum();
+        this.distanciaTotalKm = CalculadoraDistancia.calcular(this.pedidosEntrega);
     }
 }

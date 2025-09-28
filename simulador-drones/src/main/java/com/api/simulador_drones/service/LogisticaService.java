@@ -11,10 +11,12 @@ import com.api.simulador_drones.repository.DroneRepository;
 import com.api.simulador_drones.repository.EntregaRepository;
 import com.api.simulador_drones.repository.PedidoRepository;
 
+import com.api.simulador_drones.util.CalculadoraDistancia;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,8 +52,15 @@ public class LogisticaService {
         Optional<Entrega> addEntrega = entregasEmCarregamento.stream()
                 .filter(entrega -> {
                     Drone drone = entrega.getDroneAssociado();
-                    double pesoTotalAtual = entrega.getPesoTotalKg();
-                    return drone.getCapacidadeMaximaKg() >= (pesoTotalAtual + novoPedido.getPesoKg());
+                    boolean pesoOk = drone.getCapacidadeMaximaKg() >= (entrega.getPesoTotalKg() + novoPedido.getPesoKg());
+                    if (!pesoOk) return false;
+
+                    List<Pedido> rotaFutura = new ArrayList<>(entrega.getPedidosEntrega());
+                    rotaFutura.add(novoPedido);
+
+                    double distanciaFutura = CalculadoraDistancia.calcular(rotaFutura);
+
+                    return drone.getAutonomiaMaximaKm() >= distanciaFutura;
                 })
                 .findFirst();
 
@@ -74,7 +83,13 @@ public class LogisticaService {
         List<Drone> dronesOciosos = droneRepository.findByStatus(DroneStatus.IDLE);
 
         Optional<Drone> droneDisponivel = dronesOciosos.stream()
-                .filter(drone -> drone.getCapacidadeMaximaKg() >= pedido.getPesoKg())
+                .filter(drone -> {
+                    boolean pesoOk = drone.getCapacidadeMaximaKg() >= pedido.getPesoKg();
+                    if (!pesoOk) return false;
+
+                    double distanciaDaRota = CalculadoraDistancia.calcular(List.of(pedido));
+                    return drone.getAutonomiaMaximaKm() >= distanciaDaRota;
+                })
                 .findFirst();
 
         if (droneDisponivel.isPresent()) {
@@ -94,5 +109,4 @@ public class LogisticaService {
         }
         return false;
     }
-
 }
