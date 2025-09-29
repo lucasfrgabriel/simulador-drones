@@ -31,7 +31,7 @@ public class PedidoService {
         Pedido pedidoSalvo = pedidoRepository.save(pedido);
         logisticaService.alocarNovoPedido(pedidoSalvo);
 
-        return pedidoRepository.findById(pedidoSalvo.getId()).get();
+        return pedidoSalvo;
     }
 
     public List<Pedido> findAll(){
