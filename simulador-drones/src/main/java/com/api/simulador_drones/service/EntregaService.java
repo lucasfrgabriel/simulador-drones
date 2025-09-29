@@ -3,7 +3,6 @@ package com.api.simulador_drones.service;
 import com.api.simulador_drones.domain.Drone;
 import com.api.simulador_drones.domain.Entrega;
 
-import com.api.simulador_drones.domain.enums.DroneStatus;
 import com.api.simulador_drones.domain.enums.EntregaStatus;
 import com.api.simulador_drones.domain.enums.PedidoStatus;
 import com.api.simulador_drones.dto.EntregaDTO;

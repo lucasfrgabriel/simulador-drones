@@ -40,7 +40,7 @@ public class LogisticaServiceTest {
     @Test
     @DisplayName("Novo pedido sem entrega disponivel, cria nova e aloca pedido")
     void alocarPedidoSemEntrega(){
-        Pedido pedido = new Pedido(1L, 5.0, null, 3, 4, PedidoStatus.PENDENTE, null);
+        Pedido pedido = new Pedido(1L, 5.0, Prioridade.MEDIA, 3, 4, PedidoStatus.PENDENTE, null);
         Drone droneOcioso = new Drone(1L, 10.0, 50.0, 100.0, DroneStatus.IDLE, 0, 0);
 
         when(entregaRepository.findByDroneStatus(DroneStatus.CARREGANDO)).thenReturn(Collections.emptyList());
