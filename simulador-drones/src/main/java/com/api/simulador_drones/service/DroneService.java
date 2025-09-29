@@ -32,7 +32,7 @@ public class DroneService {
         Drone novoDrone = droneRepository.save(drone);
         logisticaService.alocarPedidosPendentes(novoDrone);
 
-        return droneRepository.findById(novoDrone.getId()).get();
+        return novoDrone;
     }
 
     public List<Drone> findAll(){
